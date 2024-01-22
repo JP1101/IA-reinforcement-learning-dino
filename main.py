@@ -21,99 +21,61 @@ clock = pygame.time.Clock()
 floor_y = height - 50
 floor_width = width
 
-dino_y_pos = 0
+jump_t = 0
 
-dino_width = 37
-dino_height = 75
-dino_x_pos = 45
-# 0 nothing, 1 jumping
-Action = 0
+class Dino:
+    def __init__(self, x, y, width, height, action):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.action = action
+    
 
-
-#variables de las variables del dinosaurio ._.
-
-
-cactuses_x_pos = [0, 0, 0]
-
-
-dis = 200
-
-
-big_width = dino_width * 2
-medium_width = dino_width * 1.5
-small_width = dino_width * 1
-
-big_height = dino_height + 25
-small_height = dino_height - 25  
-
-#Variables del dinosaurio
-C1_x_pos = width - dis
-C2_x_pos = width - dis + (width/2)
-
-C1_y_pos = 0
-C2_y_pos = 50
-
-C1_width = big_width
-C2_width = medium_width
-
-C1_height = big_height
-C2_height = small_height
+    def Jump(self):
+        global jump_t
+        
+        jump_t += 1
+        if self.action == 1:
+            self.y = -(jump_t - 50) ** 2 / 13.33333 + 187.5
+            if jump_t > 100:
+                jump_t = 0
+    def checkAction(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_w] or key[pygame.K_UP] or key[pygame.K_SPACE] or jump_t < 100 and jump_t != 0:
+            self.action = 1
+        else:
+            self.action = 0
 
 
-jump_t = 4
+class cactus:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 
-
-def Actualize_C_x_pos():
-    global C1_x_pos, C2_x_pos, width
-    C1_x_pos -= 8
-    C2_x_pos -= 8
-
-    c = random.randint(20, 50)
-    if C1_x_pos < -50:
-        C1_x_pos += width + c
-
-    if C2_x_pos < -50:
-        C2_x_pos += width + c
-
-
-
-def check_Player_Action():
-    global Action
-
-    global jump_t
-    keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_UP] or keys[pygame.K_SPACE] or jump_t < 100:
-        Action = 1
-    else:
-        Action = 0
-
-def Jump():
-    global dino_y_pos
-    global jump_t
-    global Action
-
-    if jump_t < 100:
-        dino_y_pos = -(jump_t - 50) ** 2 / 13.33333 + 187.5  # Quadratic function
-        Action = 1
-    else:
-        dino_y_pos = 0
-        jump_t = 0
-        Action = 0
-
-    jump_t += 2
-
-
-
+    def functionalities(self):
+        self.x -= 5
+        if self.x < -self.width + width-50:
+            self.x += width + random.randint(50, 60)
+            self.height = random.randint(75, 125)
+            self.width = random.randint(50, 200)
 
 
 Playing = True
+
+dino1 = Dino(45, 0, 37.5, 75, 0)
+cactus1 = cactus(width, 0, 75, 100)
+cactus2 = cactus(width*1.5, 0, 100, 50)
 # Bucle principal
 while Playing:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
+    #Dinosaurios:
 
     # Dibujar el fondo  
     screen.fill(black)
@@ -122,24 +84,23 @@ while Playing:
     pygame.draw.line(screen, white, (0, floor_y), (floor_width, floor_y), 2)
 
     #Dibujar el dinosaurio
-    pygame.draw.rect(screen, white, (dino_x_pos, floor_y - dino_height - dino_y_pos, dino_width, dino_height))
+    pygame.draw.rect(screen, white, (dino1.x, floor_y - dino1.height - dino1.y, dino1.width, dino1.height))
+
+    #Dibujar los cactuses
+    pygame.draw.rect(screen, white, (cactus1.x, floor_y - cactus1.height - cactus1.y, cactus1.width, cactus1.height))
+
+    pygame.draw.rect(screen, white, (cactus2.x, floor_y - cactus2.height - cactus2.y, cactus2.width, cactus2.height))
 
 
 
-    #Dibujar el cactus 1
-    pygame.draw.rect(screen, white, (C1_x_pos, floor_y - C1_height - C1_y_pos, C1_width, C1_height))
-    #Dibujar el cactus 2
-    pygame.draw.rect(screen, (20,50,20), (C2_x_pos, floor_y - C2_height - C2_y_pos, C1_width, C1_height))
+    dino1.checkAction()
 
-    Actualize_C_x_pos()
+    dino1.Jump()
 
-    check_Player_Action()
+    cactus1.functionalities()
+    cactus2.functionalities()
 
-    if Action == 1:
-        Jump()
-    else:
-        dino_y_pos = 0
-
+    print(jump_t)
     # Actualizar la pantalla
     pygame.display.flip()
 
