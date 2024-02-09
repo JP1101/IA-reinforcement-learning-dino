@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import numpy as np
 
 # Inicializar Pygame
 pygame.init()
@@ -22,6 +23,7 @@ floor_y = height - 50
 floor_width = width
 
 jump_t = 0
+t = 0
 
 class Dino:
     def __init__(self, x, y, width, height, action):
@@ -35,15 +37,34 @@ class Dino:
     def Jump(self):
         global jump_t
         
-        jump_t += 1
+        jump_t += 2
         if self.action == 1:
             self.y = -(jump_t - 50) ** 2 / 13.33333 + 187.5
+
             if jump_t > 100:
                 jump_t = 0
+
+        if self.action == 3:
+            jump_t += 9
+
+
+    def duck(self):
+        if self.action == 2:
+            self.height = 37.5
+            self.width = 75
+        else:
+            self.width = 37.5
+            self.height = 75
+
+
+    
+
     def checkAction(self):
         key = pygame.key.get_pressed()
         if key[pygame.K_w] or key[pygame.K_UP] or key[pygame.K_SPACE] or jump_t < 100 and jump_t != 0:
             self.action = 1
+        elif key[pygame.K_DOWN] or key[pygame.K_s]:
+            self.action = 2
         else:
             self.action = 0
 
@@ -55,19 +76,20 @@ class cactus:
         self.width = width
         self.height = height
 
-    def functionalities(self):
-        self.x -= 5
-        if self.x < -self.width + width-50:
-            self.x += width + random.randint(50, 60)
-            self.height = random.randint(75, 125)
-            self.width = random.randint(50, 200)
+    def move(self):
+        
+        if self.x <= -200:
+            self.x = 1024
+            print("x")
+
+        self.x -= 8
 
 
 Playing = True
 
 dino1 = Dino(45, 0, 37.5, 75, 0)
-cactus1 = cactus(width, 0, 75, 100)
-cactus2 = cactus(width*1.5, 0, 100, 50)
+cactus1 = cactus(1024, 0, 75, 100)
+cactus2 = cactus(1638.4, 0, 100, 50)
 # Bucle principal
 while Playing:
     for event in pygame.event.get():
@@ -96,9 +118,10 @@ while Playing:
     dino1.checkAction()
 
     dino1.Jump()
+    dino1.duck()
 
-    cactus1.functionalities()
-    cactus2.functionalities()
+    cactus1.move()
+    cactus2.move()
 
     print(jump_t)
     # Actualizar la pantalla
@@ -106,3 +129,4 @@ while Playing:
 
     # Controlar la velocidad de actualización
     clock.tick(60)
+    t+=1
